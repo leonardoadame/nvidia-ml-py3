@@ -47,54 +47,60 @@ import datetime
 #
 def GetEccByType(handle, counterType, errorType):
     strResult = ''
-    
+
     try:
         deviceMemory = nvmlDeviceGetMemoryErrorCounter(handle, errorType, counterType,
                                                        NVML_MEMORY_LOCATION_DEVICE_MEMORY)
     except NVMLError as err:
         deviceMemory = handleError(err)
-    strResult += '          <device_memory>' + str(deviceMemory) + '</device_memory>\n'
-    
+    strResult += (
+        f'          <device_memory>{str(deviceMemory)}' + '</device_memory>\n'
+    )
+
     try:
         registerFile = nvmlDeviceGetMemoryErrorCounter(handle, errorType, counterType,
                                                        NVML_MEMORY_LOCATION_REGISTER_FILE)
     except NVMLError as err:
         registerFile = handleError(err)
-    
-    strResult += '          <register_file>' + str(registerFile) + '</register_file>\n'
-    
+
+    strResult += (
+        f'          <register_file>{str(registerFile)}' + '</register_file>\n'
+    )
+
     try:
         l1Cache = nvmlDeviceGetMemoryErrorCounter(handle, errorType, counterType,
                                                   NVML_MEMORY_LOCATION_L1_CACHE)
     except NVMLError as err:
         l1Cache = handleError(err)
-    strResult += '          <l1_cache>' + str(l1Cache) + '</l1_cache>\n'
-    
+    strResult += f'          <l1_cache>{str(l1Cache)}' + '</l1_cache>\n'
+
     try:
         l2Cache = nvmlDeviceGetMemoryErrorCounter(handle, errorType, counterType,
                                                   NVML_MEMORY_LOCATION_L2_CACHE)
     except NVMLError as err:
         l2Cache = handleError(err)
-    strResult += '          <l2_cache>' + str(l2Cache) + '</l2_cache>\n'
-    
+    strResult += f'          <l2_cache>{str(l2Cache)}' + '</l2_cache>\n'
+
     try:
         textureMemory = nvmlDeviceGetMemoryErrorCounter(handle, errorType, counterType,
                                                         NVML_MEMORY_LOCATION_TEXTURE_MEMORY)
     except NVMLError as err:
         textureMemory = handleError(err)
-    strResult += '          <texture_memory>' + str(textureMemory) + '</texture_memory>\n'
-    
+    strResult += (
+        f'          <texture_memory>{str(textureMemory)}'
+        + '</texture_memory>\n'
+    )
+
     try:
         count = str(nvmlDeviceGetTotalEccErrors(handle, errorType, counterType))
     except NVMLError as err:
         count = handleError(err)
-    strResult += '          <total>' + count + '</total>\n'
-    
+    strResult += f'          <total>{count}' + '</total>\n'
+
     return strResult
 
 def GetEccByCounter(handle, counterType):
-    strResult = ''
-    strResult += '        <single_bit>\n'
+    strResult = '' + '        <single_bit>\n'
     strResult += str(GetEccByType(handle, counterType, NVML_MEMORY_ERROR_TYPE_CORRECTED))
     strResult += '        </single_bit>\n'
     strResult += '        <double_bit>\n'
@@ -103,8 +109,7 @@ def GetEccByCounter(handle, counterType):
     return strResult
 
 def GetEccStr(handle):
-    strResult = ''
-    strResult += '      <volatile>\n'
+    strResult = '' + '      <volatile>\n'
     strResult += str(GetEccByCounter(handle, NVML_VOLATILE_ECC))
     strResult += '      </volatile>\n'
     strResult += '      <aggregate>\n'
@@ -121,23 +126,26 @@ def GetRetiredPagesByCause(handle, cause):
         error = handleError(err)
         pages = None
         count = error
-    strResult += '        <retired_count>' + count + '</retired_count>\n'
+    strResult += f'        <retired_count>{count}' + '</retired_count>\n'
     if pages is not None:
         strResult += '        <retired_page_addresses>\n'
         for page in pages:
             strResult += '          <retired_page_address>' + "0x%016x" % page + '</retired_page_address>\n'
         strResult += '        </retired_page_addresses>\n'
     else:
-        strResult += '        <retired_page_addresses>' + error + '</retired_page_addresses>\n'
+        strResult += (
+            f'        <retired_page_addresses>{error}'
+            + '</retired_page_addresses>\n'
+        )
     return strResult
 
 def GetRetiredPagesStr(handle):
     strResult = ''
     causes = [ "multiple_single_bit_retirement", "double_bit_retirement" ]
     for idx in range(NVML_PAGE_RETIREMENT_CAUSE_COUNT):
-        strResult += '      <' + causes[idx] + '>\n'
+        strResult += f'      <{causes[idx]}' + '>\n'
         strResult += GetRetiredPagesByCause(handle, idx)
-        strResult += '      </' + causes[idx] + '>\n'
+        strResult += f'      </{causes[idx]}' + '>\n'
 
     strResult += '      <pending_retirement>'
     try:
@@ -193,10 +201,7 @@ def GetClocksThrottleReasons(handle):
 # Converts errors into string messages
 #
 def handleError(err):
-    if (err.value == NVML_ERROR_NOT_SUPPORTED):
-        return "N/A"
-    else:
-        return err.__str__()
+    return "N/A" if (err.value == NVML_ERROR_NOT_SUPPORTED) else err.__str__()
 
 #######
 def XmlDeviceQuery():

@@ -258,14 +258,14 @@ class NVMLError(Exception):
         NVML_ERROR_LIB_RM_VERSION_MISMATCH: "RM has detected an NVML/RM version mismatch.",
         NVML_ERROR_UNKNOWN:             "Unknown Error",
         }
-    def __new__(typ, value):
+    def __new__(cls, value):
         '''
         Maps value to a proper subclass of NVMLError.
         See _extractNVMLErrorsAsClasses function for more details
         '''
-        if typ == NVMLError:
-            typ = NVMLError._valClassMapping.get(value, typ)
-        obj = Exception.__new__(typ)
+        if cls == NVMLError:
+            cls = NVMLError._valClassMapping.get(value, cls)
+        obj = Exception.__new__(cls)
         obj.value = value
         return obj
     def __str__(self):
@@ -311,7 +311,7 @@ def _nvmlCheckReturn(ret):
     return ret
 
 ## Function access ##
-_nvmlGetFunctionPointer_cache = dict() # function pointers are cached to prevent unnecessary libLoadLock locking
+_nvmlGetFunctionPointer_cache = {}
 def _nvmlGetFunctionPointer(name):
     global nvmlLib
 
@@ -321,7 +321,7 @@ def _nvmlGetFunctionPointer(name):
     libLoadLock.acquire()
     try:
         # ensure library was loaded
-        if (nvmlLib == None):
+        if nvmlLib is None:
             raise NVMLError(NVML_ERROR_UNINITIALIZED)
         try:
             _nvmlGetFunctionPointer_cache[name] = getattr(nvmlLib, name)
@@ -349,8 +349,7 @@ def nvmlStructToFriendlyObject(struct):
         key = x[0]
         value = getattr(struct, key)
         d[key] = value
-    obj = nvmlFriendlyObject(d)
-    return obj
+    return nvmlFriendlyObject(d)
 
 # pack the object so it can be passed to the NVML library
 def nvmlFriendlyObjectToStruct(obj, model):
@@ -395,8 +394,8 @@ class _PrintableStructure(Structure):
                 fmt = self._fmt_[key]
             elif "<default>" in self._fmt_:
                 fmt = self._fmt_["<default>"]
-            result.append(("%s: " + fmt) % (key, value))
-        return self.__class__.__name__ + "(" + string.join(result, ", ") + ")"
+            result.append(f"%s: {fmt}" % (key, value))
+        return f"{self.__class__.__name__}(" + string.join(result, ", ") + ")"
 
 class c_nvmlUnitInfo_t(_PrintableStructure):
     _fields_ = [
